@@ -2,9 +2,9 @@ name: CI Verification
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 # Wir brauchen nur Lese-Rechte für den Code
 permissions:
