@@ -82,7 +82,7 @@ export async function fetchUserByName(name: string) {
 }
 
 // Hilfsfunktion: Follower fetchen
-export async function fetchUserFollowing(userId: number, page: number = 1) {
+export async function fetchUserFollowing(userId: number, page = 1) {
   const res = await fetch(ANILIST_API, {
     body: JSON.stringify({ query: FOLLOWING_QUERY, variables: { page, userId } }),
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },

@@ -1,5 +1,5 @@
-import { ref, computed } from 'vue';
-import { fetchUserFollowing, fetchMediaCollection, fetchUserByName, fetchMediaStatsForUsers } from '../api/anilist';
+import { computed, ref } from 'vue';
+import { fetchMediaCollection, fetchMediaStatsForUsers, fetchUserByName, fetchUserFollowing } from '../api/anilist';
 import type { AnilistUser, MediaType } from '../types';
 
 export function useSocialGraph(currentMediaType: import('vue').Ref<MediaType>) {
@@ -34,7 +34,7 @@ export function useSocialGraph(currentMediaType: import('vue').Ref<MediaType>) {
 
   const analyzeFollower = async (followerId: number) => {
     const follower = followers.value.find(u => u.id === followerId);
-    if (!follower || follower.listLoaded) return;
+    if (!follower || follower.listLoaded) {return;}
 
     try {
       const res = await fetchMediaCollection(follower.name, currentMediaType.value, 1);
@@ -61,7 +61,7 @@ export function useSocialGraph(currentMediaType: import('vue').Ref<MediaType>) {
     try {
       const userIds = followers.value.map(u => u.id);
       if (userIds.length === 0) {
-        currentMediaStats.value = { ratings: [], average: 0, median: 0, count: 0 };
+        currentMediaStats.value = { average: 0, count: 0, median: 0, ratings: [] };
         return;
       }
 
@@ -74,7 +74,7 @@ export function useSocialGraph(currentMediaType: import('vue').Ref<MediaType>) {
         if (pageData?.mediaList?.length > 0) {
           const entry = pageData.mediaList[0];
           const user = followers.value.find(u => u.id === id);
-          if (user) ratings.push({ user, score: entry.score || 0, status: entry.status });
+          if (user) {ratings.push({ score: entry.score || 0, status: entry.status, user });}
         }
       });
 
@@ -88,7 +88,7 @@ export function useSocialGraph(currentMediaType: import('vue').Ref<MediaType>) {
         median = validScores.length % 2 !== 0 ? validScores[mid] : (validScores[mid - 1] + validScores[mid]) / 2;
       }
 
-      const result = { ratings, average, median, count: ratings.length };
+      const result = { average, count: ratings.length, median, ratings };
       detailCache.value.set(mediaId, result);
       currentMediaStats.value = result;
     } finally {
@@ -114,15 +114,15 @@ export function useSocialGraph(currentMediaType: import('vue').Ref<MediaType>) {
   };
 
   return {
-    followers,
-    loadFollowers,
     analyzeFollower,
-    inspectMedia,
     currentMediaStats,
+    followers,
+    inspectMedia,
+    loadFollowers,
     loadingDetails,
+    loadingSocial,
     socialScores,
     toggleWeight,
-    userWeights,
-    loadingSocial
+    userWeights
   };
 }
