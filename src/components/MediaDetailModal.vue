@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MediaEntry, AnilistUser } from '../types';
+import type { AnilistUser, MediaEntry } from '../types';
 
 // Props
 const props = defineProps<{
@@ -15,8 +15,8 @@ const emit = defineEmits<{
 
 // Helper für Farben
 const getScoreColor = (score: number) => {
-  if (score >= 8) return '#10b981';
-  if (score >= 6) return '#f59e0b';
+  if (score >= 8) {return '#10b981';}
+  if (score >= 6) {return '#f59e0b';}
   return '#ef4444'; 
 };
 </script>

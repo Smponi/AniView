@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/vue-query';
-import { computed, type Ref } from 'vue';
+import { type Ref, computed } from 'vue';
 import { fetchMediaCollection } from '../api/anilist';
-import type { MediaType, MediaEntry } from '../types';
+import type { MediaEntry, MediaType } from '../types';
 
 export function useMediaList(userName: Ref<string>, mediaType: Ref<MediaType>) {
   
@@ -11,9 +11,7 @@ export function useMediaList(userName: Ref<string>, mediaType: Ref<MediaType>) {
     queryKey: ['mediaList', userName, mediaType],
     queryFn: ({ pageParam = 1 }) => fetchMediaCollection(userName.value, mediaType.value, pageParam),
     initialPageParam: 1,
-    getNextPageParam: (lastPage: any, allPages) => {
-      return lastPage.data.MediaListCollection.hasNextChunk ? allPages.length + 1 : undefined;
-    },
+    getNextPageParam: (lastPage: any, allPages) => lastPage.data.MediaListCollection.hasNextChunk ? allPages.length + 1 : undefined,
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 Minuten Cache
     refetchOnWindowFocus: false,
@@ -21,7 +19,7 @@ export function useMediaList(userName: Ref<string>, mediaType: Ref<MediaType>) {
 
   // Helper um die Daten flach zu klopfen (Flattening)
   const allEntries = computed(() => {
-    if (!query.data.value) return [];
+    if (!query.data.value) {return [];}
     
     const rawEntries = query.data.value.pages.flatMap((page: any) =>
       page.data.MediaListCollection.lists.flatMap((list: any) => list.entries)

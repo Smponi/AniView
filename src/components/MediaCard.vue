@@ -9,20 +9,20 @@ defineProps<{
 // Hilfsfunktion für Status-Farben
 const getStatusColor = (status: string) => {
   const colors: Record<string, string> = {
-    CURRENT: '#3b82f6',
     COMPLETED: '#10b981',
-    PLANNING: '#94a3b8',
+    CURRENT: '#3b82f6',
     DROPPED: '#ef4444',
     PAUSED: '#f59e0b',
+    PLANNING: '#94a3b8',
   };
   return colors[status] || '#64748b';
 };
 
 // Hilfsfunktion für Score-Farben (ästhetische Abstufung)
 const getScoreColor = (score: number) => {
-  if (score >= 8) return '#10b981'; // Grün
-  if (score >= 6) return '#f59e0b'; // Orange
-  if (score > 0) return '#ef4444';  // Rot
+  if (score >= 8) {return '#10b981';} // Grün
+  if (score >= 6) {return '#f59e0b';} // Orange
+  if (score > 0) {return '#ef4444';}  // Rot
   return '#4b5563'; // Grau für 0
 };
 </script>

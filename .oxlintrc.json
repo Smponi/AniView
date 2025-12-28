@@ -1,8 +1,11 @@
 {
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
     "plugins": ["typescript", "vue"],
     "categories": {
-      "correctness": "on",
-      "perf": "on",
-      "suspicious": "on"
+      "correctness": "deny",
+      "perf": "deny",
+      "suspicious": "deny",
+      "pedantic": "warn",
+      "style": "warn"
     }
   }

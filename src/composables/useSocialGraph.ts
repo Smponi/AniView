@@ -1,5 +1,5 @@
-import { ref, computed } from 'vue';
-import { fetchUserFollowing, fetchMediaCollection, fetchUserByName, fetchMediaStatsForUsers } from '../api/anilist';
+import { computed, ref } from 'vue';
+import { fetchMediaCollection, fetchMediaStatsForUsers, fetchUserByName, fetchUserFollowing } from '../api/anilist';
 import type { AnilistUser, MediaType } from '../types';
 
 export function useSocialGraph(currentMediaType:  import('vue').Ref<MediaType>) {
@@ -17,7 +17,7 @@ export function useSocialGraph(currentMediaType:  import('vue').Ref<MediaType>) 
 
   // Temporärer Speicher für das aktuell geöffnete Media im Modal
   const currentMediaStats = ref<{
-    ratings: Array<{ user: AnilistUser; score: number; status: string }>;
+    ratings: { user: AnilistUser; score: number; status: string }[];
     average: number;
     median: number;
     count: number;
@@ -56,7 +56,7 @@ export function useSocialGraph(currentMediaType:  import('vue').Ref<MediaType>) 
   // 2. Button "Compare" Logic
   const analyzeFollower = async (followerId: number) => {
     const follower = followers.value.find(u => u.id === followerId);
-    if (!follower) return;
+    if (!follower) {return;}
     
     // UI Feedback
     follower.listLoaded = 'LOADING'; // Wir könnten hier einen Status enum nutzen
@@ -68,8 +68,8 @@ export function useSocialGraph(currentMediaType:  import('vue').Ref<MediaType>) 
       const mediaScoreMap = new Map<number, number>();
       
       entries.forEach((e: any) => {
-        // e.score ist hier im Format POINT_10 (0-10) oder POINT_100, wir nehmen roh
-        // und normalisieren ggf. später.
+        // E.score ist hier im Format POINT_10 (0-10) oder POINT_100, wir nehmen roh
+        // Und normalisieren ggf. später.
         mediaScoreMap.set(e.media.id, e.score || 0);
       });
       
@@ -84,15 +84,15 @@ export function useSocialGraph(currentMediaType:  import('vue').Ref<MediaType>) 
 
   // Hilfsfunktion: Hole alle Bewertungen meiner Freunde für eine MediaID
   const getSocialDetails = (mediaId: number) => {
-    const ratings: Array<{ user: AnilistUser; score: number }> = [];
+    const ratings: { user: AnilistUser; score: number }[] = [];
 
     followerScoresMap.value.forEach((mediaMap, userId) => {
       if (mediaMap.has(mediaId)) {
         const user = followers.value.find(u => u.id === userId);
         if (user) {
           ratings.push({
-            user,
-            score: mediaMap.get(mediaId) || 0
+            score: mediaMap.get(mediaId) || 0,
+            user
           });
         }
       }
@@ -158,14 +158,14 @@ export function useSocialGraph(currentMediaType:  import('vue').Ref<MediaType>) 
       const userIds = followers.value.map(u => u.id);
       if (userIds.length === 0) {
         // Leeres Resultat zurückgeben, damit Modal nicht ewig lädt
-        currentMediaStats.value = { ratings: [], average: 0, median: 0, count: 0 };
+        currentMediaStats.value = { average: 0, count: 0, median: 0, ratings: [] };
         return;
       }
 
       const res = await fetchMediaStatsForUsers(mediaId, userIds);
       const data = res.data; 
 
-      const ratings: Array<{ user: AnilistUser; score: number; status: string }> = [];
+      const ratings: { user: AnilistUser; score: number; status: string }[] = [];
 
       userIds.forEach(id => {
         const pageData = data[`u${id}`]; 
@@ -204,10 +204,10 @@ export function useSocialGraph(currentMediaType:  import('vue').Ref<MediaType>) 
       // WICHTIG: Count ist ratings.length (Anzahl Freunde), nicht validScores (Anzahl Bewertungen)
       // So siehst du auch, wer es gerade schaut, aber noch nicht bewertet hat.
       const result = { 
-        ratings, 
         average, 
+        count: ratings.length, 
         median, 
-        count: ratings.length 
+        ratings 
       };
 
       // 2. CACHE SAVE: Speichern für später
@@ -219,7 +219,7 @@ export function useSocialGraph(currentMediaType:  import('vue').Ref<MediaType>) 
     } catch (e) {
       console.error("Detail Fetch Error", e);
       // Fehlerzustand setzen, damit UI nicht hängt
-      currentMediaStats.value = { ratings: [], average: 0, median: 0, count: 0 };
+      currentMediaStats.value = { average: 0, count: 0, median: 0, ratings: [] };
     } finally {
       loadingDetails.value = false;
     }

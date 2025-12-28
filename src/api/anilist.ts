@@ -26,15 +26,15 @@ query ($userName: String, $type: MediaType, $chunk: Int) {
 
 export async function fetchMediaCollection(userName: string, type: MediaType, page: number) {
   const response = await fetch(ANILIST_API, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
     body: JSON.stringify({
       query: QUERY,
-      variables: { userName, type, chunk: page },
+      variables: { chunk: page, type, userName },
     }),
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    method: 'POST',
   });
 
   if (!response.ok) {
@@ -73,20 +73,20 @@ query ($userId: Int!, $page: Int) {
 // Hilfsfunktion: ID fetchen
 export async function fetchUserByName(name: string) {
   const res = await fetch(ANILIST_API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ query: USER_ID_QUERY, variables: { name } }),
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    method: 'POST',
   });
-  if (!res.ok) throw new Error('User not found');
+  if (!res.ok) {throw new Error('User not found');}
   return res.json();
 }
 
 // Hilfsfunktion: Follower fetchen
 export async function fetchUserFollowing(userId: number, page: number = 1) {
   const res = await fetch(ANILIST_API, {
+    body: JSON.stringify({ query: FOLLOWING_QUERY, variables: { page, userId } }),
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({ query: FOLLOWING_QUERY, variables: { userId, page } }),
   });
   return res.json();
 }
@@ -94,7 +94,7 @@ export async function fetchUserFollowing(userId: number, page: number = 1) {
 // DYNAMISCHE QUERY GENERIERUNG
 // Wir nutzen einen Alias "u<ID>", da Keys in GraphQL mit Buchstaben anfangen müssen.
 export async function fetchMediaStatsForUsers(mediaId: number, userIds: number[]) {
-  if (userIds.length === 0) return {};
+  if (userIds.length === 0) {return {};}
 
   // Wir nutzen Page(perPage: 1), um 404 Fehler zu vermeiden, wenn ein Eintrag nicht existiert.
   // Statt "Error: Not Found" bekommen wir einfach ein leeres Array [].
@@ -110,9 +110,9 @@ export async function fetchMediaStatsForUsers(mediaId: number, userIds: number[]
   const query = `query { ${queryParts} }`;
 
   const res = await fetch(ANILIST_API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({ query })
+    body: JSON.stringify({ query }),
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    method: 'POST'
   });
 
   // Jetzt sollten wir fast immer 200 OK bekommen, auch wenn User den Anime nicht gesehen haben

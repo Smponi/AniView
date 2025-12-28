@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, ref as vueRef } from 'vue';
+import { computed, onMounted, ref, ref as vueRef, watch } from 'vue';
 import { useMediaList } from './composables/useMediaList';
 import { useSocialGraph } from './composables/useSocialGraph';
 
@@ -10,7 +10,7 @@ import MediaCard from './components/MediaCard.vue';
 import SkeletonCard from './components/ui/SkeletonCard.vue';
 import MediaDetailModal from './components/MediaDetailModal.vue';
 import BaseIcon from './components/ui/BaseIcon.vue'; // <--- FIX FÜR "Failed to resolve component"
-import type { MediaType, MediaEntry, SortOption } from './types';
+import type { MediaEntry, MediaType, SortOption } from './types';
 
 // --- STATE ---
 const userName = ref('Ryo5678');
@@ -56,7 +56,7 @@ const {
 
 // Load followers when user changes
 watch(debouncedName, (val) => {
-  if (val) loadFollowers(val);
+  if (val) {loadFollowers(val);}
 }, { immediate: true });
 
 // --- MODAL ACTION ---
@@ -118,7 +118,7 @@ onMounted(() => {
       fetchNextPage();
     }
   }, { rootMargin: '400px' });
-  if (triggerEl.value) obs.observe(triggerEl.value);
+  if (triggerEl.value) {obs.observe(triggerEl.value);}
 });
 </script>
 
