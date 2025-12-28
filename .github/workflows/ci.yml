@@ -1,0 +1,73 @@
+name: CI Verification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Wir brauchen nur Lese-Rechte für den Code
+permissions:
+  contents: read
+
+# Cancel alte Runs, wenn neuer Code gepusht wird
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # --- STAGE 1: QUALITY GATES ---
+  quality:
+    name: 🛡️ Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js & pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          run_install: |
+            - args: [--frozen-lockfile, --strict-peer-dependencies]
+
+      - name: Setup Node Cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      # 1. Oxlint (Wer nutzt denn noch eslint?)
+      - name: ⚡ Run Oxlint
+        run: pnpm oxlint -c .oxlintrc.json --deny-warnings src
+
+      # 2. TypeScript Check
+      - name: 📐 Type Check
+        run: pnpm type-check
+
+      # 3. Unit Tests
+      - name: 🧪 Run Vitest
+        run: pnpm test
+
+  # --- STAGE 2: BUILD VERIFICATION ---
+  build-check:
+    name: 📦 Verify Build
+    needs: quality # Läuft nur wenn Quality Gates grün sind
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Der entscheidende Test: Kann Vite das Projekt bauen?
+      # Wenn hier ein Fehler fliegt, ist der Code nicht "shippable".
+      - name: Dry Run Build
+        run: pnpm build
