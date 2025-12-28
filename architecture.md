@@ -47,6 +47,10 @@ src/
 
 ## 3. Core Features & Implementation Details
 
+### Data Structure Consolidation
+- **Social Graph Storage:** We use a single `Map<UserId, Map<MediaId, Score>>` to store friend data. This serves both the Hype-Ranking (keys) and the detailed Score-Consensus (values).
+- **Dead Code Removal:** Replaced local sync calculations with async JIT (Just-In-Time) batching to handle large friend lists efficiently.
+
 ### A. The "Smart" Infinite Scroll
 
 * **Implementation:** Located in `App.vue` & `useMediaList.ts`.
